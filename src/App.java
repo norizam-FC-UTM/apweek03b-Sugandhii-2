@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 class BankAccount {
 
@@ -36,6 +37,11 @@ class BankAccount {
         balance = balance + dividend;
     }
 
+    // sorted balanced from high to low
+    public double getBalance() {
+        return balance;
+    }
+
     // Set dividend rate
     public void setDividendRate(double rate) {
         dividendRate = rate;
@@ -56,48 +62,117 @@ public class App {
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
+        ArrayList<BankAccount> accounts = new ArrayList<>();
 
         System.out.println("===== BANK ACCOUNT SYSTEM =====");
 
-        // Input
-        System.out.print("Enter account holder name: ");
-        String name = sc.nextLine();
+        boolean running = true;
 
-        System.out.print("Enter initial deposit: RM ");
-        double initialDeposit = sc.nextDouble();
+        while (running) {
 
-        // Create account
-        BankAccount acc1 = new BankAccount(name, initialDeposit);
+            System.out.println("\n1. Create Account");
+            System.out.println("2. Deposit");
+            System.out.println("3. Withdraw");
+            System.out.println("4. Apply Dividend");
+            System.out.println("5. Display All Accounts");
+            System.out.println("6. Sort by Balance");
+            System.out.println("7. Exit");
+            System.out.print("Choose option: ");
 
-        System.out.println("\nAccount created successfully.");
-        acc1.printObjectState();
+            int choice = sc.nextInt();
+            sc.nextLine();
 
-        // Deposit
-        System.out.println("----- DEPOSIT -----");
-        System.out.print("Enter deposit amount: RM ");
-        double depositAmount = sc.nextDouble();
-        acc1.deposit(depositAmount);
-        acc1.printObjectState();
+            switch (choice) {
 
-        // Withdraw
-        System.out.println("----- WITHDRAW -----");
-        System.out.print("Enter withdrawal amount: RM ");
-        double withdrawAmount = sc.nextDouble();
-        acc1.withdraw(withdrawAmount);
-        acc1.printObjectState();
+                case 1:
+                    System.out.print("Enter account holder name: ");
+                    String name = sc.nextLine();
 
-        // Dividend
-        System.out.println("----- YEAR-END DIVIDEND -----");
-        System.out.print("Enter dividend rate (example 0.05 for 5%): ");
-        double rate = sc.nextDouble();
-        acc1.setDividendRate(rate);
-        acc1.applyDividend();
+                    System.out.print("Enter initial deposit: RM ");
+                    double deposit = sc.nextDouble();
+                    sc.nextLine();
 
-        acc1.printObjectState();
+                    accounts.add(new BankAccount(name, deposit));
+                    System.out.println("Account created successfully!");
+                    break;
 
-        System.out.println("===== END OF PROGRAM =====");
+                case 2:
+                    displayAccounts(accounts);
+                    System.out.print("Select account index: ");
+                    int depIndex = sc.nextInt();
 
+                    System.out.print("Enter deposit amount: RM ");
+                    double depAmount = sc.nextDouble();
+
+                    accounts.get(depIndex).deposit(depAmount);
+                    System.out.println("Deposit successful.");
+                    break;
+
+                case 3:
+                    displayAccounts(accounts);
+                    System.out.print("Select account index: ");
+                    int witIndex = sc.nextInt();
+
+                    System.out.print("Enter withdrawal amount: RM ");
+                    double witAmount = sc.nextDouble();
+
+                    accounts.get(witIndex).withdraw(witAmount);
+                    System.out.println("Withdrawal successful.");
+                    break;
+
+                case 4:
+                    System.out.print("Enter dividend rate (0.05 for 5%): ");
+                    double rate = sc.nextDouble();
+
+                    for (BankAccount acc : accounts) {
+                        acc.setDividendRate(rate);
+                        acc.applyDividend();
+                    }
+
+                    System.out.println("Dividend applied to all accounts.");
+                    break;
+
+                case 5:
+                    displayAccounts(accounts);
+                    break;
+
+                case 6:
+                    if (accounts.isEmpty()) {
+                        System.out.println("No accounts available.");
+                        break;
+                    }
+
+                    ArrayList<BankAccount> sortedList = new ArrayList<>(accounts);
+
+                    sortedList.sort((a, b) -> Double.compare(b.getBalance(), a.getBalance()));
+
+                    System.out.println("\nAccounts sorted by balance (High to Low)");
+                    displayAccounts(sortedList);
+                    break;
+
+                case 7:
+                    running = false;
+                    System.out.println("Exiting system...");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
         sc.close();
+    }
+
+    public static void displayAccounts(ArrayList<BankAccount> accounts) {
+
+        if (accounts.isEmpty()) {
+            System.out.println("No accounts available.");
+            return;
+        }
+
+        for (int i = 0; i < accounts.size(); i++) {
+            System.out.println("\nIndex: " + (i + 1));
+            accounts.get(i).printObjectState();
+        }
     }
 }
 
