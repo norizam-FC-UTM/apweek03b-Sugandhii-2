@@ -6,24 +6,26 @@ class BankAccount {
     String name;
     double balance;
     double dividendRate; // example: 0.05 = 5%
+    ArrayList<String> transactions;
 
     // Constructor
     public BankAccount(String name, double initialDeposit) {
         this.name = name;
         this.balance = initialDeposit;
         this.dividendRate = 0.0;
+        this.transactions = new ArrayList<>();
     }
 
     // Deposit money
     public void deposit(double amount) {
-        balance = balance + amount;
-        // too simple - need refinement
+        balance += amount;
+        transactions.add("Deposit: RM " + String.format("%.2f", amount));
     }
 
     // Withdraw money
     public void withdraw(double amount) {
-        balance = balance - amount;
-        // too simple - need refinement
+        balance -= amount;
+        transactions.add("Withdrawal: RM " + String.format("%.2f", amount));
     }
 
     // Calculate dividend
@@ -34,10 +36,10 @@ class BankAccount {
     // Apply dividend to balance
     public void applyDividend() {
         double dividend = calculateDividend();
-        balance = balance + dividend;
+        balance += dividend;
     }
 
-    // sorted balanced from high to low
+    // Getter for balance
     public double getBalance() {
         return balance;
     }
@@ -45,20 +47,30 @@ class BankAccount {
     // Set dividend rate
     public void setDividendRate(double rate) {
         dividendRate = rate;
-        // too simple - need refinement
+    }
+
+    public void displayTransactions() {
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions yet.");
+            return;
+        }
+        System.out.println(("Transaction history for " + name + ":"));
+        for (String t : transactions) {
+            System.out.println("- " + t);
+        }
     }
 
     // Display account information
     public void printObjectState() {
         System.out.println("\n===== ACCOUNT INFO =====");
         System.out.println("Name          : " + name);
-        System.out.println("Balance       : RM " + balance);
-        System.out.println("Dividend Rate : " + dividendRate * 100 + "%");
-        System.out.println();
+        System.out.printf("Balance       : RM %.2f\n", balance);
+        System.out.println("Dividend Rate : " + dividendRate * 100 + "%\n");
     }
 }
 
 public class App {
+
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
@@ -76,11 +88,15 @@ public class App {
             System.out.println("4. Apply Dividend");
             System.out.println("5. Display All Accounts");
             System.out.println("6. Sort by Balance");
-            System.out.println("7. Exit");
+            System.out.println("7. Show Transactions History");
+            System.out.println("8. Exit");
             System.out.print("Choose option: ");
 
-            int choice = sc.nextInt();
-            sc.nextLine();
+            int choice = -1;
+            if (sc.hasNextInt()) {
+                choice = sc.nextInt();
+            }
+            sc.nextLine(); // clear newline
 
             switch (choice) {
 
@@ -89,44 +105,112 @@ public class App {
                     String name = sc.nextLine();
 
                     System.out.print("Enter initial deposit: RM ");
-                    double deposit = sc.nextDouble();
+                    double deposit = -1;
+                    if (sc.hasNextDouble()) {
+                        deposit = sc.nextDouble();
+                    }
                     sc.nextLine();
+
+                    if (deposit < 0) {
+                        System.out.println("Initial deposit must be positive!");
+                        break;
+                    }
 
                     accounts.add(new BankAccount(name, deposit));
                     System.out.println("Account created successfully!");
                     break;
 
                 case 2:
+                    if (accounts.isEmpty()) {
+                        System.out.println("No accounts available.");
+                        break;
+                    }
+
                     displayAccounts(accounts);
                     System.out.print("Select account index: ");
-                    int depIndex = sc.nextInt();
+                    int depIndex = -1;
+                    if (sc.hasNextInt()) {
+                        depIndex = sc.nextInt();
+                    }
+                    sc.nextLine();
+
+                    if (depIndex < 1 || depIndex > accounts.size()) {
+                        System.out.println("Invalid index! Try again.");
+                        break;
+                    }
 
                     System.out.print("Enter deposit amount: RM ");
-                    double depAmount = sc.nextDouble();
+                    double depAmount = -1;
+                    if (sc.hasNextDouble()) {
+                        depAmount = sc.nextDouble();
+                    }
+                    sc.nextLine();
 
-                    accounts.get(depIndex).deposit(depAmount);
+                    if (depAmount <= 0) {
+                        System.out.println("Deposit must be positive!");
+                        break;
+                    }
+
+                    accounts.get(depIndex - 1).deposit(depAmount);
                     System.out.println("Deposit successful.");
                     break;
 
                 case 3:
+                    if (accounts.isEmpty()) {
+                        System.out.println("No accounts available.");
+                        break;
+                    }
+
                     displayAccounts(accounts);
                     System.out.print("Select account index: ");
-                    int witIndex = sc.nextInt();
+                    int witIndex = -1;
+                    if (sc.hasNextInt()) {
+                        witIndex = sc.nextInt();
+                    }
+                    sc.nextLine();
+
+                    if (witIndex < 1 || witIndex > accounts.size()) {
+                        System.out.println("Invalid index! Try again.");
+                        break;
+                    }
 
                     System.out.print("Enter withdrawal amount: RM ");
-                    double witAmount = sc.nextDouble();
+                    double witAmount = -1;
+                    if (sc.hasNextDouble()) {
+                        witAmount = sc.nextDouble();
+                    }
+                    sc.nextLine();
 
-                    accounts.get(witIndex).withdraw(witAmount);
+                    BankAccount acc = accounts.get(witIndex - 1);
+
+                    if (witAmount <= 0) {
+                        System.out.println("Withdrawal must be positive!");
+                        break;
+                    } else if (witAmount > acc.getBalance()) {
+                        System.out.println("Insufficient balance!");
+                        break;
+                    }
+
+                    acc.withdraw(witAmount);
                     System.out.println("Withdrawal successful.");
                     break;
 
                 case 4:
                     System.out.print("Enter dividend rate (0.05 for 5%): ");
-                    double rate = sc.nextDouble();
+                    double rate = -1;
+                    if (sc.hasNextDouble()) {
+                        rate = sc.nextDouble();
+                    }
+                    sc.nextLine();
 
-                    for (BankAccount acc : accounts) {
-                        acc.setDividendRate(rate);
-                        acc.applyDividend();
+                    if (rate < 0) {
+                        System.out.println("Dividend rate must be positive!");
+                        break;
+                    }
+
+                    for (BankAccount a : accounts) {
+                        a.setDividendRate(rate);
+                        a.applyDividend();
                     }
 
                     System.out.println("Dividend applied to all accounts.");
@@ -143,14 +227,35 @@ public class App {
                     }
 
                     ArrayList<BankAccount> sortedList = new ArrayList<>(accounts);
-
                     sortedList.sort((a, b) -> Double.compare(b.getBalance(), a.getBalance()));
 
-                    System.out.println("\nAccounts sorted by balance (High to Low)");
+                    System.out.println("\nAccounts sorted by balance (High to Low):");
                     displayAccounts(sortedList);
                     break;
 
                 case 7:
+                    if (accounts.isEmpty()) {
+                        System.out.println("No accounts available.");
+                        break;
+                    }
+
+                    displayAccounts(accounts); // tampilkan index & nama
+                    System.out.print("Select account index to view transactions: ");
+                    int txIndex = -1;
+                    if (sc.hasNextInt()) {
+                        txIndex = sc.nextInt();
+                    }
+                    sc.nextLine();
+
+                    if (txIndex < 1 || txIndex > accounts.size()) {
+                        System.out.println("Invalid index!");
+                        break;
+                    }
+
+                    accounts.get(txIndex - 1).displayTransactions();
+                    break;
+
+                case 8:
                     running = false;
                     System.out.println("Exiting system...");
                     break;
@@ -159,6 +264,7 @@ public class App {
                     System.out.println("Invalid choice.");
             }
         }
+
         sc.close();
     }
 
